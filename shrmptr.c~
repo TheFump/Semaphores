@@ -1,0 +1,54 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+int main(){
+
+key_t key; 
+int shmid;
+int** data;
+
+
+printf("start\n");
+//get smp
+//get key
+key = ftok("sharemem1.c", 11);
+if(key == -1) perror("error ftok");
+//creation
+shmid=shmget(key, 5*sizeof(int*)+15*sizeof(int), 0666|IPC_EXCL) ;
+if(shmid==-1) perror("error shmid)") ;
+//get segment
+data = shmat(shmid, (void*)0, 0);
+if(data == (int**)-1) perror("error shmat");
+
+
+//lecture 
+int i,j;
+printf("start2\n");
+
+for(j=0; j<5; j++)
+	{
+		int* tab2 = (int*)data[j];
+		printf("L'adresse de %d est %p, ",j, tab2);fflush(stdout);
+		for(i=0; i<3; i++)
+		{
+		printf("Vecteur %d case %d = %d", j, i, tab2[i]);
+		}
+		printf("\n");
+	}	
+
+printf("start3\n");
+
+
+
+//libération
+shmdt(data);
+shmctl(shmid, IPC_RMID, 0);
+return 0;
+}

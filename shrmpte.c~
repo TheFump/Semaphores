@@ -1,0 +1,70 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+
+int main(){
+
+printf(".");
+
+key_t key; 
+int shmid;
+int** data;
+int i, j;
+
+printf(".");
+
+//get smp
+//get key
+key = ftok("sharemem1.c", 11);
+if(key == -1) perror("error ftok");
+//creation
+shmid=shmget(key, 5*sizeof(int*)+15*sizeof(int), 0666|IPC_CREAT|IPC_EXCL) ;
+if(shmid== -1) perror("Création échoue error shmid)") ;
+//get segment
+data = shmat(shmid, (void*)0, 0);
+if(data == (int**)-1) perror("error shmat");
+
+printf(".");
+
+//ecriture tableau et vecteur
+for(i=0; i < 5; i++)
+{
+	int*tab = data[i] = (int*)(data+5)+3*i; // on veut qu'il se déplace de 4 et non pas de 8 octets (place pour entier)
+	for(j=0; j < 3; j++)
+	{		
+	tab[j] = 5+3*i+j;
+	}
+}
+
+printf(".");		
+
+//vérification du contenu
+for(i=0; i < 5; i++)
+{
+	int* tab = (int*)data[i];
+	printf("adresses : %p,", tab);fflush(stdout);
+	printf("\n");
+	for(j=0; j< 3; j++)
+	{
+	printf("valeurs : %d,", tab[j]);fflush(stdout);
+	printf("\n");
+	}
+}
+
+printf(".");
+
+//temps pour le lecteur
+sleep(10);
+
+//libération
+shmdt(data);
+shmctl(shmid, IPC_RMID, 0);
+return 0;
+}

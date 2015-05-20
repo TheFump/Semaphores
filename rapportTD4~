@@ -1,0 +1,65 @@
+GUTH Alexandre | REYMONDET Samuel
+--------------------------------------------------------------------------
+Rapport TD4 
+--------------------------------------------------------------------------
+
+	Une partie des explication sera fournie dans les commentaires du programme pour des soucis de lisbilité.
+	Nous n'avons pas fais de header commun car nous avons travaillé certaines parties séparément des autres.
+
+=================================================
+Exercice 1 : (Programme sharemem1.c, sharemem1.o)
+=================================================
+	Voir sharemem1.c pour fonctionnement du programme.
+
+	Explication des valeurs de tab2: 
+
+	Un fork réalise une copie du contexte du père dans celui du fils : les variables portent le même nom mais sont en réalité stockées à deux adresses différentes et sont indépendantes les unes des autres : une modification directe dans le fils n'affecte pas le père, est vice-versa.
+	Lors du fork, le père est endormi immédiatement et permet alors au fils de se lancer en premier. Le fils affiche donc le tableau après l'avoir modifé. Lorsque le père se réveille, il affiche sa propre copie du tableau, qui est encore celle avant le fork(), non modifiée par le fils. Il s'endort a nouveau, laissant le fils écrire le tableau dans la mémoire partagée, puis le père copie le segment dans le tableau, affichant alors le tableau mis à jour, idnetique à celui du fils.
+
+=========================================================================
+Exercice 2 : (Programme shrmem_e.c, sharmem_r.c, shrmem_e.o, sharmem_r.o)
+=========================================================================
+	Voir shrmem_e.c, sharmem_r.c pour fonctionnement du programme.
+
+	sharemem_e est l'écrivain : on initialise le segment de mémoire partagé en vérifiant à chaque étape les possibilités d'erreurs, avec la permission de créer le segment de mémoire partagée. Ensuite, on écrit à l'aide d'une boucle tout en vérifiant ce que l'on écrit, avant de faire un sleep(30) et de libérer le smp.
+ 
+	Pour le lecteur, on initialise selon les mêmes paramètres afin d'obtenir le même segment de mémoire, puis on lis avec une boucle for également, avant de libérer la mémoire.
+ 
+	L'important est de bien calibrer le segment de mémoire partagée pour que les deux programmes aient accès au même.
+
+==================================================================
+Exercice 3: (Programme shrmpte.c, shrmptr.c, shrmpte.o, shrmptr.o)
+==================================================================
+	Voir shrmpte.c, shrmptr.c pour le fonctionnement du programme.
+
+	Comme dans l'exercice précédent on crée un segment de mémoire partagée identique pour les deux programmes, où l'on prévoit de remplir 5 adresses et 15 entiers afin d'avoir les 5 vecteurs et leurs pointeurs respectifs. 
+	Dans shrmpte, l'écrivain, on écris dans le tableau en faisant attention aux déplacement de la manière explquée dans les commentaires du programme lui même.
+	Sans shrmptr,lecteur, on tente de lire les vecteurs à partir des adresses obtenues dans le smp, mais on reçoit un segfault car il s'agit d'adresses virtuelles qui ne sont pas transmissibles d'un programme à un autre : il faut trouver une autre solution pour accèder aux vecteurs.
+
+=======================================================================
+Exercice 4 : (Programme shrmpte2.c, shrmptr2.c, shrmpte2.o, shrmptr2.o)
+=======================================================================
+	Voir shrmpte2.c, shrmptr2.c pour le fonctionnement du programme.
+
+	Afin de faire fonctionner le programme, nous avons effectué les changement suivants : 
+	- Nous sommes partis du principe qu'il ne fallait pas utiliser les adresses et nous avons choisis de stocker le "déplacement", 		c'est à dire la distance entre le début du segment de mémoire partagé et le vecteur. Comme il s'agit d'un tableau, les cases 		mémoires sont contigues : ainsi, dans data[0], on stocke le déplacement vers data[5], soit 5*4octets; dans data[1], vers data[9]; 	et ainsi de suite.
+	- Nous modifions donc notre déclaration : au lieu de stocker des adresses de 8 octets sur les 5 premiers emplacement, nous stockons 		des entiers.
+
+==========================================================================================================
+Exercice 5: (Programme lirfic.c, inific.c, showfic.c, modific.c, lirfic.o, inific.o, showfic.o, modific.o)
+==========================================================================================================
+
+	Les programmes lirfic et inific sont triviaux et sont obtenus en séparant le programme donnée en exemple. Voir les commentaires respectifs pour les détails du fonctionnement
+
+	modific.c. :  
+crée un smp, effectue un mmap puis éxécute la boucle, qui fonctionne et écris correctement d'après un controle.
+
+showfic crée un smp, effecture le mmap puis lis dans le fichier, mais sans recevoir les modifucations de modific!
+lirfic ne les recoit pas non plus.
+
+
+
+
+
+
+
